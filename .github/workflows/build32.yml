@@ -8,8 +8,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure CMake for 32-bit (Win32)
-      run: cmake -B build -A Win32
+    - name: Configure CMake for 32-bit (Win32) with Static Runtime
+      run: cmake -B build -A Win32 -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded"
 
     - name: Build Release
       run: cmake --build build --config Release
@@ -21,3 +21,6 @@ jobs:
         path: |
           build/**/*.exe
           build/**/*.dll
+          *.txt
+          *.ini
+          settings*
