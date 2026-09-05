@@ -8,11 +8,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure CMake for Windows 7 32-bit
-      run: cmake -B build -A Win32 -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -DCMAKE_CXX_FLAGS="/DWINVER=0x0601 /D_WIN32_WINNT=0x0601" -DCMAKE_C_FLAGS="/DWINVER=0x0601 /D_WIN32_WINNT=0x0601"
+    - name: Setup MSYS2 MinGW 32-bit
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW32
+        update: true
+        install: >-
+          mingw-w64-i686-gcc
+          mingw-w64-i686-cmake
+          mingw-w64-i686-ninja
 
     - name: Build Release
-      run: cmake --build build --config Release
+      shell: msys2 {0}
+      run: |
+        cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_SHARED_LINKER_FLAGS="-static"
+        cmake --build build
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
