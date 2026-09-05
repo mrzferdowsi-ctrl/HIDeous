@@ -8,21 +8,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup MSYS2 MinGW 32-bit
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW32
-        update: true
-        install: >-
-          mingw-w64-i686-toolchain
-          mingw-w64-i686-cmake
-          mingw-w64-i686-ninja
+    - name: Download YY-Thunks (Win7 Patch)
+      shell: powershell
+      run: |
+        nuget install YY-Thunks -OutputDirectory thunks
+        $obj = (Get-ChildItem -Path thunks -Recurse -Filter "YY_Thunks_for_Win7.obj" | Where-Object { $_.FullName -like "*X86*" }).FullName
+        echo "THUNK_PATH=$obj" >> $env:GITHUB_ENV
+
+    - name: Configure CMake for Windows 7
+      shell: powershell
+      run: |
+        cmake -B build -A Win32 -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" "-DCMAKE_EXE_LINKER_FLAGS=$env:THUNK_PATH" "-DCMAKE_SHARED_LINKER_FLAGS=$env:THUNK_PATH"
 
     - name: Build Release
-      shell: msys2 {0}
-      run: |
-        cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" -DCMAKE_SHARED_LINKER_FLAGS="-static -static-libgcc -static-libstdc++"
-        cmake --build build
+      run: cmake --build build --config Release
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
