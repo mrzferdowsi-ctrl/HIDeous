@@ -12,15 +12,16 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW32
+        update: true
         install: >-
-          mingw-w64-i686-gcc
+          mingw-w64-i686-toolchain
           mingw-w64-i686-cmake
-          mingw-w64-i686-make
+          mingw-w64-i686-ninja
 
     - name: Build Release
       shell: msys2 {0}
       run: |
-        cmake -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" -DCMAKE_SHARED_LINKER_FLAGS="-static -static-libgcc -static-libstdc++"
+        cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" -DCMAKE_SHARED_LINKER_FLAGS="-static -static-libgcc -static-libstdc++"
         cmake --build build
 
     - name: Upload Artifact
