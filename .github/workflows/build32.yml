@@ -1,0 +1,21 @@
+name: Build 32-bit
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake for 32-bit (Win32)
+      run: cmake -B build -A Win32
+
+    - name: Build Release
+      run: cmake --build build --config Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: HIDeous-32bit
+        path: build/Release/
