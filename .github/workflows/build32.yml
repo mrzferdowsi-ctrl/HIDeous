@@ -8,8 +8,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure CMake for 32-bit (Win32) with Static Runtime
-      run: cmake -B build -A Win32 -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded"
+    - name: Configure CMake for Windows 7 32-bit
+      run: cmake -B build -A Win32 -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -DCMAKE_CXX_FLAGS="/DWINVER=0x0601 /D_WIN32_WINNT=0x0601" -DCMAKE_C_FLAGS="/DWINVER=0x0601 /D_WIN32_WINNT=0x0601"
 
     - name: Build Release
       run: cmake --build build --config Release
