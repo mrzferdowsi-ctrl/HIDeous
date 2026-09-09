@@ -35,7 +35,6 @@ extern "C" LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
     {
         if (settings.global.Debug)
         {
-            // Log every hook call
             std::wostringstream ss;
             ss << "2️⃣ WH_KEYBOARD - code: " << code
                << ", wparam: 0x" << std::hex << static_cast<DWORD>(wParam) << std::dec
@@ -44,11 +43,7 @@ extern "C" LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
             DebugLog(ss.str());
         }
 
-        // Log target window info
-        DWORD targetProcessId = 0;
-        GetWindowThreadProcessId(g_mainWindow, &targetProcessId);
-
-        // Try to verify if window still exists
+        // Try to verify if target main window still exists
         if (!IsWindow(g_mainWindow))
         {
             DebugLog(L"Target window is no longer valid!");
@@ -56,9 +51,9 @@ extern "C" LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
         }
 
         // Check if we are interested in this key
-        // wParam is the virtual key code
         BYTE vk = static_cast<BYTE>(wParam);
         USHORT sc = static_cast<USHORT>((lParam >> 16) & 0xFF);
+        
         // Check for extended key (bit 24)
         if (lParam & (1 << 24))
         {
@@ -120,10 +115,8 @@ HIDEOUS_API BOOL InstallHook(HWND hwnd)
 
     const Settings &settings = SettingsManager::getInstance().getSettings();
 
-    // Log initial hook installation
     if (settings.global.Debug)
     {
-        // Log information about the target window
         DWORD targetProcessId = 0;
         DWORD targetThreadId = GetWindowThreadProcessId(g_mainWindow, &targetProcessId);
 
@@ -206,24 +199,18 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID reserved)
     case DLL_PROCESS_ATTACH:
     {
         const Settings &settings = SettingsManager::getInstance().getSettings();
-
         DisableThreadLibraryCalls(hModule);
 
         WCHAR processPath[MAX_PATH];
         GetModuleFileNameW(NULL, processPath, MAX_PATH);
 
         DebugLog(L"DLL loaded into process: " + std::wstring(processPath));
-        DebugLog(L"Main window handle: 0x" + std::to_wstring((DWORD)(UINT_PTR)g_mainWindow));
-        DebugLog(L"Debug mode: " + std::to_wstring(settings.global.Debug));
-
         break;
     }
     case DLL_PROCESS_DETACH:
-        DebugLog(L"DLL unloaded");
-        if (g_keyboardHook)
-        {
-            UninstallHook();
-        }
+        DebugLog(L"DLL unloaded from process");
+        // UninstallHook() was intentionally removed from here.
+        // Injected processes exiting must NOT remove the system-wide hook!
         break;
     }
     return TRUE;
